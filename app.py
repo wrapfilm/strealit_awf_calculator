@@ -108,6 +108,10 @@ with col_left:
                     st.error(f"计算出错: {str(e)}")
             else:
                 st.error("错误: 必须上传 透光率(T%) 和 室外反射率(R%) CSV 文件。")
+
+        if 'current_result' in st.session_state and st.session_state.current_result.get('spectra'):
+            # The HTML file originally had an inline button under '计算'
+            st.page_link("pages/Solar_Spectrum.py", label="显示谱图", icon="📈")
                 
     st.markdown("#### 📜 计算历史")
     
@@ -165,14 +169,16 @@ with col_right:
         st.markdown("#### 核心指标总览")
         st.markdown("<hr style='margin-top:0.5rem; margin-bottom:1rem;'>", unsafe_allow_html=True)
         
-        c1, c2, c3, c4 = st.columns(4)
+        # 使用 2x2 网格，屏幕变窄时 Streamlit 默认会将其折叠
+        r1_c1, r1_c2 = st.columns(2)
+        r2_c1, r2_c2 = st.columns(2)
         
-        c1.markdown(f'<div class="hero-card border-vlt"><div class="hero-label">可见光透光率 (VLT)</div><div class="hero-value">{res["VLT"]:.1f}<span class="hero-unit">%</span></div></div>', unsafe_allow_html=True)
-        c2.markdown(f'<div class="hero-card border-tser"><div class="hero-label">总隔热率 (Tser)</div><div class="hero-value">{res["TSER"]:.1f}<span class="hero-unit">%</span></div></div>', unsafe_allow_html=True)
-        c3.markdown(f'<div class="hero-card border-uvb"><div class="hero-label">紫外线阻隔率 (UV Block)</div><div class="hero-value">{res["UVB"]:.1f}<span class="hero-unit">%</span></div></div>', unsafe_allow_html=True)
+        r1_c1.markdown(f'<div class="hero-card border-vlt"><div class="hero-label">可见光透光率 (VLT)</div><div class="hero-value">{res["VLT"]:.1f}<span class="hero-unit">%</span></div></div>', unsafe_allow_html=True)
+        r1_c2.markdown(f'<div class="hero-card border-tser"><div class="hero-label">总隔热率 (Tser)</div><div class="hero-value">{res["TSER"]:.1f}<span class="hero-unit">%</span></div></div>', unsafe_allow_html=True)
+        r2_c1.markdown(f'<div class="hero-card border-uvb"><div class="hero-label">紫外线阻隔率 (UV Block)</div><div class="hero-value">{res["UVB"]:.1f}<span class="hero-unit">%</span></div></div>', unsafe_allow_html=True)
         
         if res.get('VLR_I') is not None:
-            c4.markdown(f'<div class="hero-card border-vlr"><div class="hero-label">室内可见光反射率 (VLR)</div><div class="hero-value">{res["VLR_I"]:.1f}<span class="hero-unit">%</span></div></div>', unsafe_allow_html=True)
+            r2_c2.markdown(f'<div class="hero-card border-vlr"><div class="hero-label">室内可见光反射率 (VLR)</div><div class="hero-value">{res["VLR_I"]:.1f}<span class="hero-unit">%</span></div></div>', unsafe_allow_html=True)
         
         st.markdown("<br>", unsafe_allow_html=True)
         st.markdown("#### GB/T 2680 标准指标详情")
@@ -195,42 +201,42 @@ with col_right:
                 <tbody>
                     <tr style="border-bottom: 1px solid #dee2e6;">
                         <td style="padding: 10px;">可见光透射比<br><small style="color: #6c757d;">Visible Light Transmittance (VLT)</small></td>
-                        <td style="padding: 10px;">$\\tau_v$</td>
+                        <td style="padding: 10px;">&tau;<sub>v</sub></td>
                         <td style="padding: 10px; text-align: right; font-weight: bold;">{res['VLT']:.2f} %</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #dee2e6;">
                         <td style="padding: 10px;">可见光-外反射比<br><small style="color: #6c757d;">Visible Light External Reflectance</small></td>
-                        <td style="padding: 10px;">$\\rho_{{v,e}}$</td>
+                        <td style="padding: 10px;">&rho;<sub>v,e</sub></td>
                         <td style="padding: 10px; text-align: right; font-weight: bold;">{res['VLR_E']:.2f} %</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #dee2e6; {vlr_i_color}">
                         <td style="padding: 10px;">可见光-内反射比<br><small style="color: #6c757d;">Visible Light Internal Reflectance</small></td>
-                        <td style="padding: 10px;">$\\rho_{{v,i}}$</td>
+                        <td style="padding: 10px;">&rho;<sub>v,i</sub></td>
                         <td style="padding: 10px; text-align: right;">{vlr_i_val}</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #dee2e6;">
                         <td style="padding: 10px;">紫外线透射比<br><small style="color: #6c757d;">Ultraviolet Transmittance (UVT)</small></td>
-                        <td style="padding: 10px;">$\\tau_{{uv}}$</td>
+                        <td style="padding: 10px;">&tau;<sub>uv</sub></td>
                         <td style="padding: 10px; text-align: right; font-weight: bold;">{res['UVT']:.2f} %</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #dee2e6;">
                         <td style="padding: 10px;">太阳光直接透射比<br><small style="color: #6c757d;">Direct Solar Transmittance (DET)</small></td>
-                        <td style="padding: 10px;">$\\tau_e$</td>
+                        <td style="padding: 10px;">&tau;<sub>e</sub></td>
                         <td style="padding: 10px; text-align: right; font-weight: bold;">{res['TE']:.2f} %</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #dee2e6;">
                         <td style="padding: 10px;">太阳光直接反射比<br><small style="color: #6c757d;">Direct Solar Reflectance (DER)</small></td>
-                        <td style="padding: 10px;">$\\rho_e$</td>
+                        <td style="padding: 10px;">&rho;<sub>e</sub></td>
                         <td style="padding: 10px; text-align: right; font-weight: bold;">{res['RE']:.2f} %</td>
                     </tr>
                     <tr style="border-bottom: 1px solid #dee2e6;">
                         <td style="padding: 10px;">太阳能总透射比<br><small style="color: #6c757d;">Solar Heat Gain Coefficient (SHGC / g-value)</small></td>
-                        <td style="padding: 10px;">$g$</td>
+                        <td style="padding: 10px;"><i>g</i></td>
                         <td style="padding: 10px; text-align: right; font-weight: bold; color: #dc3545;">{res['G']:.2f} %</td>
                     </tr>
                     <tr>
                         <td style="padding: 10px;">遮阳系数<br><small style="color: #6c757d;">Shading Coefficient (SC)</small></td>
-                        <td style="padding: 10px;">$SC$</td>
+                        <td style="padding: 10px;"><i>SC</i></td>
                         <td style="padding: 10px; text-align: right; font-weight: bold; color: #dc3545;">{res['SC']:.3f}</td>
                     </tr>
                 </tbody>
@@ -238,66 +244,6 @@ with col_right:
         </div>
         """
         st.markdown(table_html, unsafe_allow_html=True)
-        
-        # 光谱图
-        if "spectra" in res and res["spectra"]:
-            st.markdown("<br>", unsafe_allow_html=True)
-            
-            spectra = res["spectra"]
-            fig = go.Figure()
-
-            fig.add_trace(go.Scatter(
-                x=spectra['wl'], y=spectra['irr'],
-                mode='lines',
-                name='原始太阳能谱图',
-                line=dict(color='#ffc107', width=2.5)
-            ))
-            
-            fig.add_trace(go.Scatter(
-                x=spectra['wl'], y=spectra['direct'],
-                mode='lines',
-                name='直接透过谱图',
-                line=dict(color='#0d6efd', width=2.5)
-            ))
-
-            fig.add_trace(go.Scatter(
-                x=spectra['wl'], y=spectra['total'],
-                mode='lines',
-                name='总透过谱图 (含二次传热)',
-                line=dict(color='#dc3545', width=2.5)
-            ))
-
-            fig.update_layout(
-                title=dict(text=f'<b>太阳能光谱分布 (300 - 2500nm) - {file_ident}</b>', font=dict(size=20)),
-                xaxis=dict(
-                    title=dict(text="波长 Wavelength (nm)", font=dict(size=14)),
-                    dtick=500,
-                    minor=dict(dtick=100, showgrid=True, gridcolor='#e5e5e5'),
-                    showgrid=True,
-                    gridcolor='#cccccc',
-                    zeroline=False
-                ),
-                yaxis=dict(
-                    title=dict(text="辐照度 Irradiance (W/m²)", font=dict(size=14)),
-                    showgrid=True,
-                    gridcolor='#cccccc',
-                    zeroline=True,
-                    zerolinecolor='#999999'
-                ),
-                legend=dict(
-                    x=0.99, y=0.99,
-                    xanchor='right', yanchor='top',
-                    bgcolor='rgba(255,255,255,0.9)',
-                    bordercolor='#ced4da', borderwidth=1,
-                    font=dict(size=12)
-                ),
-                hovermode="x unified",
-                margin=dict(l=60, r=40, t=60, b=60),
-                plot_bgcolor="white"
-            )
-            
-            # Additional minor ticks setting if Plotly supports it fully, else relying on the minor object setting above
-            st.plotly_chart(fig, use_container_width=True)
 
 st.markdown("""
 <div style="text-align: center; color: #333333; font-size: 0.9rem; margin-top: 50px; margin-bottom: 20px; font-weight: 500;">
